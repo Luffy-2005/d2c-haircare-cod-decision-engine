@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Bot Simulator | D2C Haircare Brand</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #111b21;
+    }
+    .sim-wrapper {
+      display: grid;
+      grid-template-columns: 360px 440px;
+      gap: 24px;
+      max-width: 900px;
+      width: 100%;
+    }
+    .sim-sidebar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      border-radius: 16px;
+    }
+    .flow-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 12px;
+      margin-bottom: 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .flow-btn.active {
+      border-color: #00a884;
+      background: rgba(0, 168, 132, 0.15);
+    }
+    .quick-replies {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+    .chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: #e9edef;
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+    }
+    .chip:hover {
+      background: #00a884;
+      color: #fff;
+    }
+    .math-box {
+      margin-top: 18px;
+      background: #0b141a;
+      border: 1px solid #222e35;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="sim-wrapper">
+    <!-- Sidebar Controls -->
+    <div class="sim-sidebar">
+      <div style="margin-bottom:16px;">
+        <span class="brand-badge">WhatsApp API Mock</span>
+        <h2 style="font-size:18px; margin-top:4px;">Flow Test Sandbox</h2>
+        <p style="font-size:12px; color:var(--text-muted);">Test the two interactive customer flows</p>
+      </div>
+
+      <button id="btnFlowConfirm" class="flow-btn active" onclick="switchFlow('Ship after confirmation')">
+        1. Ship After Confirmation Flow
+        <span style="display:block; font-size:11px; font-weight:normal; color:#94a3b8;">Triggered T+5m on moderate risk orders</span>
+      </button>
+
+      <button id="btnFlowNudge" class="flow-btn" onclick="switchFlow('Nudge to prepaid')">
+        2. Nudge to Prepaid Flow
+        <span style="display:block; font-size:11px; font-weight:normal; color:#94a3b8;">Offers flat ₹60 discount for online payment</span>
+      </button>
+
+      <div style="margin-top:16px;">
+        <label style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Quick Customer Actions:</label>
+        <div class="quick-replies" id="quickChips">
+          <!-- Injected dynamically -->
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <label style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Simulate 24-Hour Timeout:</label>
+        <div style="display:flex; gap:6px; margin-top:6px;">
+          <button class="chip" onclick="simulateTimeout(6)">T+6h Reminder</button>
+          <button class="chip" onclick="simulateTimeout(21)">T+21h Final Warning</button>
+          <button class="chip" onclick="simulateTimeout(24)">T+24h Expire/Hold</button>
+        </div>
+      </div>
+
+      <div class="math-box">
+        <strong style="color:#00a884;">💡 The Discount Math (Why ₹60?):</strong><br>
+        Direct RTO loss = ₹169.40.<br>
+        COD fee saved = ₹30.<br>
+        In high-risk COD, RTO risk = 45%. Converting to prepaid cuts RTO to 4%, saving ₹99.45 per order.<br>
+        Giving a flat ₹60 discount yields <strong>+₹39.45 direct net profit gain</strong> per customer while ensuring 96% delivery!
+      </div>
+      
+      <div style="margin-top:16px;">
+        <a href="/" style="color:#00a884; font-size:13px; text-decoration:none; font-weight:600;">← Back to Executive Dashboard</a>
+      </div>
+    </div>
+
+    <!-- WhatsApp Phone Mockup -->
+    <div class="chat-window">
+      <div class="chat-header">
+        <div class="chat-avatar">🌿</div>
+        <div>
+          <div style="font-weight:700; font-size:14px;">PureRoots Haircare Support</div>
+          <div style="font-size:11px; color:#00a884;">Official Verified Business Account</div>
+        </div>
+      </div>
+
+      <div class="chat-messages" id="chatBox">
+        <!-- Messages injected here -->
+      </div>
+
+      <div class="chat-footer">
+        <input type="text" id="userInput" class="chat-input" placeholder="Type a message (e.g. Yes, No, delivery kab hogi?)..." onkeypress="handleEnter(event)">
+        <button class="btn btn-green" style="padding:8px 14px;" onclick="sendCustomerReply()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentFlow = "Ship after confirmation";
+    let currentState = "WAITING_FOR_REPLY";
+    let sampleOrder = {
+      order_id: "ORD-10842",
+      customer_name: "Simran Kaur",
+      product_name: "Advanced Hair Growth Serum with Redensyl",
+      order_value: 899.0,
+      shipping_address: "House No 24, Near Gurudwara, Model Town",
+      city: "Ludhiana",
+      pincode: "141002"
+    };
+
+    function switchFlow(flow) {
+      currentFlow = flow;
+      document.getElementById("btnFlowConfirm").classList.toggle("active", flow === "Ship after confirmation");
+      document.getElementById("btnFlowNudge").classList.toggle("active", flow === "Nudge to prepaid");
+      updateQuickChips();
+      initChat();
+    }
+
+    function updateQuickChips() {
+      const container = document.getElementById("quickChips");
+      if (currentFlow === "Ship after confirmation") {
+        container.innerHTML = `
+          <button class="chip" onclick="clickReply('Yes, please confirm!')">Reply "Yes"</button>
+          <button class="chip" onclick="clickReply('Cancel order')">Reply "No/Cancel"</button>
+          <button class="chip" onclick="clickReply('Delivery kab tak aayegi?')">"When will it arrive?"</button>
+          <button class="chip" onclick="clickReply('Address change karna hai')">"Change Address"</button>
+        `;
+      } else {
+        container.innerHTML = `
+          <button class="chip" onclick="clickReply('1 pay online')">Reply "1 Pay Online"</button>
+          <button class="chip" onclick="clickReply('2 keep COD')">Reply "2 Keep COD"</button>
+          <button class="chip" onclick="clickReply('Cancel order')">Reply "Cancel"</button>
+          <button class="chip" onclick="clickReply('Is this 100% natural?')">"Is it natural?"</button>
+        `;
+      }
+    }
+
+    async function initChat() {
+      const chatBox = document.getElementById("chatBox");
+      chatBox.innerHTML = `<div style="text-align:center; font-size:11px; color:#8696a0; margin:8px 0;">TODAY</div>`;
+      
+      const res = await fetch("/api/whatsapp/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flow_type: currentFlow, order: sampleOrder })
+      });
+      const data = await res.json();
+      currentState = data.current_state;
+      addMessage(data.message_text, "bot");
+    }
+
+    function addMessage(text, sender) {
+      const chatBox = document.getElementById("chatBox");
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${sender}`;
+      bubble.textContent = text;
+      chatBox.appendChild(bubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendCustomerReply(text) {
+      const input = document.getElementById("userInput");
+      const msg = text || input.value.trim();
+      if (!msg) return;
+      
+      addMessage(msg, "user");
+      input.value = "";
+
+      const res = await fetch("/api/whatsapp/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          flow_type: currentFlow,
+          message: msg,
+          current_state: currentState,
+          order: sampleOrder
+        })
+      });
+      const data = await res.json();
+      currentState = data.new_state;
+
+      setTimeout(() => {
+        addMessage(data.bot_reply, "bot");
+      }, 500);
+    }
+
+    function clickReply(text) {
+      sendCustomerReply(text);
+    }
+
+    function handleEnter(e) {
+      if (e.key === "Enter") sendCustomerReply();
+    }
+
+    function simulateTimeout(hours) {
+      if (hours === 6) {
+        addMessage("⏳ [System Notification @ T+6h]: Friendly reminder: Please reply 1 to confirm your order so we can dispatch it today! 📦", "bot");
+      } else if (hours === 21) {
+        addMessage("⚠️ [System Notification @ T+21h]: Final call: Unconfirmed COD orders are automatically released in 4 hours to clear warehouse stock.", "bot");
+      } else if (hours >= 24) {
+        addMessage("🛑 [System Notification @ T+24h]: Order #ORD-10842 expired and held. Zero confirmation received in 24 hours. Saved ₹169.40 RTO cost.", "bot");
+      }
+    }
+
+    window.onload = () => {
+      updateQuickChips();
+      initChat();
+    };
+  </script>
+</body>
+</html>

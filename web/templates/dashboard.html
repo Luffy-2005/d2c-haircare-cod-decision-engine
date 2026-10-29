@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COD AI Engine | Founder Executive Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Top Header -->
+    <header class="header">
+      <div class="header-title">
+        <span class="brand-badge">Shopify D2C Haircare • AI Dispatch Core</span>
+        <h1>Executive Morning COD Dashboard</h1>
+        <p class="header-subtitle">Real-time risk scoring, RTO loss prevention, and customer retention metrics</p>
+      </div>
+      <div>
+        <select id="timeframeSelect" class="timeframe-select" onchange="loadDashboardStats()">
+          <option value="yesterday">Yesterday (Last 100 Orders)</option>
+          <option value="week">Past 7 Days (700 Orders)</option>
+          <option value="all">Full Dataset (2,000 Past Orders)</option>
+        </select>
+      </div>
+    </header>
+
+    <!-- Financial Impact KPI Cards -->
+    <section class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">Estimated ₹ Saved (Avoided RTOs)</div>
+        <div class="kpi-value green" id="savedVal">₹0</div>
+        <div class="kpi-subtext">Prevented ₹169.40 direct logistics burn per return</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Estimated ₹ Lost (Genuine Cancellations)</div>
+        <div class="kpi-value red" id="lostVal">₹0</div>
+        <div class="kpi-subtext">Opportunity cost: Gross profit margin (62%)</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Prepaid Discounts Invested</div>
+        <div class="kpi-value amber" id="discountVal">₹0</div>
+        <div class="kpi-subtext">Flat ₹60 incentive to lock in 96% delivery rate</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Net Profit Impact (₹)</div>
+        <div class="kpi-value blue" id="netVal">₹0</div>
+        <div class="kpi-subtext">Direct bottom-line gain (₹ Saved − ₹ Lost − Discounts)</div>
+      </div>
+    </section>
+
+    <!-- 4 Buckets Breakdown -->
+    <div class="bucket-section-title">
+      <span>📦</span> Order Allocation Across the 4 Buckets
+    </div>
+    <section class="bucket-grid">
+      <!-- 1. Ship As-Is -->
+      <div class="bucket-card">
+        <div class="bucket-header">
+          <span class="bucket-title">1. Ship As-Is</span>
+          <span class="badge badge-ship-as-is">Immediate Dispatch</span>
+        </div>
+        <div class="bucket-count" id="countShipAsIs">0</div>
+        <div class="bucket-pct" id="pctShipAsIs">0% of volume</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="barShipAsIs" style="width: 0%; background: var(--accent-green);"></div>
+        </div>
+        <p class="bucket-desc">Verified buyers, complete addresses, and low-risk postal zones. Sent straight to picking.</p>
+      </div>
+
+      <!-- 2. Ship After Confirmation -->
+      <div class="bucket-card">
+        <div class="bucket-header">
+          <span class="bucket-title">2. Ship After Confirmation</span>
+          <span class="badge badge-confirm">WhatsApp Verification</span>
+        </div>
+        <div class="bucket-count" id="countConfirm">0</div>
+        <div class="bucket-pct" id="pctConfirm">0% of volume</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="barConfirm" style="width: 0%; background: var(--accent-amber);"></div>
+        </div>
+        <p class="bucket-desc">First-time buyers with unverified details. Dispatched only after customer taps "Confirm".</p>
+      </div>
+
+      <!-- 3. Nudge to Prepaid -->
+      <div class="bucket-card">
+        <div class="bucket-header">
+          <span class="bucket-title">3. Nudge to Prepaid</span>
+          <span class="badge badge-nudge">₹60 Instant OFF</span>
+        </div>
+        <div class="bucket-count" id="countNudge">0</div>
+        <div class="bucket-pct" id="pctNudge">0% of volume</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="barNudge" style="width: 0%; background: var(--accent-blue);"></div>
+        </div>
+        <p class="bucket-desc">High-ticket orders (>₹799) or remote zones. WhatsApp incentive slashes RTO from 28% to 4%.</p>
+      </div>
+
+      <!-- 4. Hold / Cancel -->
+      <div class="bucket-card">
+        <div class="bucket-header">
+          <span class="bucket-title">4. Hold / Cancel</span>
+          <span class="badge badge-cancel">Zero Shipping Burn</span>
+        </div>
+        <div class="bucket-count" id="countCancel">0</div>
+        <div class="bucket-pct" id="pctCancel">0% of volume</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="barCancel" style="width: 0%; background: var(--accent-red);"></div>
+        </div>
+        <p class="bucket-desc">Obvious fake names ("asdf"), gibberish addresses, invalid phones, or chronic RTO abusers.</p>
+      </div>
+    </section>
+
+    <!-- Interactive Ops Controls -->
+    <div class="controls-strip">
+      <button class="btn btn-secondary" onclick="openThresholdModal()">⚙️ Adjust Thresholds (No Code)</button>
+      <a href="/simulator" class="btn btn-green" target="_blank">📱 Open Live WhatsApp Chat Simulator</a>
+    </div>
+
+    <!-- Orders Audit Table -->
+    <section class="table-container">
+      <div class="table-header">
+        <h3>Live COD Order Inspections & Plain-English Explanations</h3>
+        <input type="text" id="orderSearch" class="search-input" placeholder="Search Order ID, Name, Pincode..." onkeyup="filterOrdersTable()">
+      </div>
+      <table id="ordersTable">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Address & Pincode</th>
+            <th>Value</th>
+            <th>Risk</th>
+            <th>Decision Action</th>
+            <th>Plain-English Reason</th>
+            <th>Simulate</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <!-- Injected via JavaScript -->
+        </tbody>
+      </table>
+    </section>
+  </div>
+
+  <!-- Thresholds Settings Modal -->
+  <div id="thresholdModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Adjust Operations Thresholds</h3>
+        <span style="cursor:pointer; font-size:20px;" onclick="closeThresholdModal()">&times;</span>
+      </div>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+        Non-technical operators can change thresholds here. The system immediately updates rules without code modification.
+      </p>
+      <div class="form-group">
+        <label>Hold / Cancel Risk Score Threshold (0 - 100):</label>
+        <input type="number" id="inputCancelThresh" min="50" max="100" value="80">
+      </div>
+      <div class="form-group">
+        <label>WhatsApp Confirmation Risk Score Threshold (0 - 100):</label>
+        <input type="number" id="inputConfirmThresh" min="20" max="80" value="40">
+      </div>
+      <div class="form-group">
+        <label>Nudge to Prepaid Min Order Value (₹):</label>
+        <input type="number" id="inputMinNudgeVal" min="400" max="2000" value="799">
+      </div>
+      <div class="form-group">
+        <label>Prepaid Discount Offer (₹):</label>
+        <input type="number" id="inputDiscountAmt" min="20" max="150" value="60">
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+        <button class="btn btn-secondary" onclick="closeThresholdModal()">Cancel</button>
+        <button class="btn btn-green" onclick="saveThresholds()">Save & Recalculate P&L</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>

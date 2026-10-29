@@ -1,0 +1,17 @@
+# Python environment and cache
+python_env/
+git_env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Windows & IDE
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini

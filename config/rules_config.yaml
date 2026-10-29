@@ -1,0 +1,66 @@
+# ==============================================================================
+# D2C Haircare Brand - COD Decision Engine Configuration
+# Non-technical Operations Configuration File
+# Edit values below to adjust operational rules without writing code.
+# ==============================================================================
+
+financial_parameters:
+  # Shipping & logistics costs (in INR)
+  forward_shipping_cost: 65.0
+  return_shipping_cost: 65.0
+  packaging_handling_cost: 25.0
+  
+  # Inventory & damage parameters
+  average_product_cost: 180.0
+  damaged_return_rate: 0.08         # 8% of returns are damaged unsellable
+  calculated_damage_cost: 14.40     # 0.08 * 180.0
+  total_direct_rto_cost: 169.40     # 65 + 65 + 25 + 14.40
+  
+  # Sales & marketing economics
+  average_order_value: 649.0
+  gross_margin_rate: 0.62           # 62% gross margin on delivered orders
+  average_gross_profit: 402.38      # 0.62 * 649.0
+  cac_meta_ads: 300.0               # Meta CAC per acquired customer
+  prepaid_baseline_rto_rate: 0.04   # 4% RTO on prepaid orders
+  cod_courier_collection_fee: 30.0  # Extra fee courier charges for COD handling
+
+prepaid_nudge_offer:
+  # Incentive offered on WhatsApp to convert COD order to Prepaid
+  discount_type: "flat"             # "flat" (INR) or "percent"
+  discount_amount: 60.0             # Flat INR 60 discount (~9.2% of AOV)
+  min_order_value_to_nudge: 799.0   # Orders above this value get prepaid nudge
+  high_risk_zone_nudge_all: true    # Always offer nudge in high-RTO remote zones
+
+decision_thresholds:
+  # Overall Composite Risk Score is calculated from 0 (very safe) to 100 (extreme risk)
+  # Action 1: "Hold / cancel" - Reserved only for undeniable fraud / garbage
+  cancel_risk_score_min: 80         # Scores >= 80 trigger Hold/Cancel
+  
+  # Action 2: "Nudge to prepaid" - Converts high-ticket / high-risk intent to online payment
+  nudge_prepaid_risk_score_min: 45  # Scores between 45 and 79 with order_value >= min get nudged
+  
+  # Action 3: "Ship after confirmation" - WhatsApp verification required
+  confirm_risk_score_min: 40        # Scores between 40 and 79 get WhatsApp confirmation prompt
+  
+  # Action 4: "Ship as-is" - Safe orders dispatched immediately
+  ship_as_is_risk_score_max: 39     # Scores <= 39 dispatched directly to warehouse
+
+risk_scoring_weights:
+  # Address Quality (Evaluated by LLM + NLP heuristics)
+  address_gibberish_penalty: 50     # Fake strings, repetitive keyboard mashing
+  address_vague_penalty: 35         # Missing house/street/landmarks (e.g. "Near bus stand")
+  address_hinglish_friction: 12     # Colloquial directions (genuine intent, slight courier delay)
+  address_complete_bonus: -15       # Detailed house/flat/street/landmark
+  
+  # Customer Identity & Phone Sanity
+  fake_name_penalty: 50             # "asdf", "test user", "xxx"
+  invalid_phone_penalty: 45         # Non 10-digit or repeated ("9999999999")
+  
+  # Past Order History
+  chronic_rto_penalty: 45           # Customer has >= 2 past RTOs
+  repeat_clean_bonus: -25           # Customer has past successful deliveries & 0 RTOs
+  first_time_buyer_penalty: 10      # Meta ad acquisition, unproven buyer
+  
+  # Order Value & Pincode Risk
+  high_ticket_penalty: 15           # COD order value >= Rs. 1,000
+  remote_tier3_pincode_penalty: 20  # Pincode known for poor courier connectivity
