@@ -24,8 +24,8 @@ Built to resolve the classic conflict between **Operations** (burning ₹169.40 
 ### 2. Setup & Installation
 ```bash
 # Clone the repository
-git clone <repo-url>
-cd "Associate software Engineer"
+git clone https://github.com/Luffy-2005/d2c-haircare-cod-decision-engine.git
+cd d2c-haircare-cod-decision-engine
 
 # Install dependencies (only lightweight standard packages: pandas, flask, pyyaml, requests)
 pip install -r requirements.txt
